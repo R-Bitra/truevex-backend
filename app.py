@@ -199,79 +199,39 @@
 # if __name__ == '__main__':
 #     app.run(debug=True)
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-# =========================
+# -------------------------
 # DATABASE CONFIG
-# =========================
+# -------------------------
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL not set")
-
-# Fix for postgres:// vs postgresql://
-if DATABASE_URL.startswith("postgres://"):
+if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
+app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret")
 
 db = SQLAlchemy(app)
 
-# =========================
-# HEALTH CHECK
-# =========================
-@app.route("/health")
-def health():
-    return jsonify({"status": "ok"})
+# -------------------------
+# MODELS
+# -------------------------
+class Contact(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    message = db.Column(db.Text)
 
-# =========================
-# CREATE TABLE (RUN ONCE)
-# =========================
-@app.route("/init-db")
-def init_db():
-    db.session.execute(text("""
-        CREATE TABLE IF NOT EXISTS leads (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(100),
-            email VARCHAR(100)
-        )
-    """))
-    db.session.commit()
-    return jsonify({"message": "Database initialized"})
-
-# =========================
-# SAVE FORM DATA
-# =========================
-@app.route("/api/submit", methods=["POST"])
-def submit_form():
-    data = request.get_json()
-
-    name = data.get("name")
-    email = data.get("email")
-
-    if not name or not email:
-        return jsonify({"error": "Name and email required"}), 400
-
-    db.session.execute(
-        text("INSERT INTO leads (name, email) VALUES (:name, :email)"),
-        {"name": name, "email": email}
-    )
-    db.session.commit()
-
-    return jsonify({"message": "Data saved successfully"})
-
-# =========================
-# START APP
-# =========================
+# -------------------------
+# ROUTES
+# -------------------------
 @app.route("/")
 def home():
     return jsonify({
@@ -279,6 +239,30 @@ def home():
         "status": "ok"
     })
 
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
+
+@app.route("/contact", methods=["POST"])
+def contact():
+    data = request.json
+
+    new_contact = Contact(
+        name=data.get("name"),
+        email=data.get("email"),
+        message=data.get("message")
+    )
+
+    db.session.add(new_contact)
+    db.session.commit()
+
+    return jsonify({"message": "Data saved successfully"}), 201
+
+# -------------------------
+# STARTUP
+# -------------------------
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(debug=True)
