@@ -272,5 +272,13 @@ def submit_form():
 # =========================
 # START APP
 # =========================
+@app.route("/")
+def home():
+    return jsonify({
+        "message": "Truevex backend is running",
+        "status": "ok"
+    })
+
+
 if __name__ == "__main__":
     app.run(debug=True)
