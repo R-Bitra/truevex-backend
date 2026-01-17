@@ -203,7 +203,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app)
 
 # ======================
@@ -229,7 +229,7 @@ class Contact(db.Model):
     message = db.Column(db.Text)
 
 # ======================
-# ROUTES (PAGES)
+# ROUTES
 # ======================
 @app.route("/")
 def home():
@@ -240,15 +240,15 @@ def contact_page():
     return render_template("contact.html")
 
 @app.route("/career")
-def career():
+def career_page():
     return render_template("career.html")
 
 @app.route("/apply")
-def apply():
+def apply_page():
     return render_template("apply.html")
 
 # ======================
-# API ROUTES
+# API
 # ======================
 @app.route("/api/contact", methods=["POST"])
 def submit_contact():
@@ -274,7 +274,7 @@ def db_check():
     return jsonify({"db": "connected"})
 
 # ======================
-# RUN
+# START
 # ======================
 if __name__ == "__main__":
     app.run(debug=True)
