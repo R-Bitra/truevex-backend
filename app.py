@@ -273,3 +273,11 @@ with app.app_context():
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
 
+@app.route("/db-check")
+def db_check():
+    try:
+        # simple query to test DB connection
+        db.session.execute(db.text("SELECT 1"))
+        return {"db": "connected"}, 200
+    except Exception as e:
+        return {"db": "error", "details": str(e)}, 500
