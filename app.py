@@ -239,6 +239,10 @@ def home():
 def contact_page():
     return render_template("contact.html")
 
+@app.route("/services")
+def services():
+    return render_template("services.html")
+
 @app.route("/career")
 def career_page():
     return render_template("career.html")
@@ -246,6 +250,8 @@ def career_page():
 @app.route("/apply")
 def apply_page():
     return render_template("apply.html")
+
+
 
 # ======================
 # API
