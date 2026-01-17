@@ -198,62 +198,41 @@
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
-from flask import Flask, request, jsonify, session
-from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
 import os
 from datetime import datetime
+from flask import Flask, request, jsonify, session
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 
-# =========================
-# APP SETUP
-# =========================
+# -------------------------------------------------
+# APP CONFIG
+# -------------------------------------------------
 app = Flask(__name__)
-CORS(app)
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret")
 
-app.secret_key = os.environ.get("SECRET_KEY", "truevex_secret_key_123")
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+# DATABASE (Postgres from Render)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
-# =========================
-# DATABASE CONFIG
-# =========================
-if os.environ.get("RENDER"):
-    # Production (Render) → MySQL
-    DB_USER = os.environ.get("DB_USER")
-    DB_PASS = os.environ.get("DB_PASS")
-    DB_HOST = os.environ.get("DB_HOST")
-    DB_NAME = os.environ.get("DB_NAME")
+app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        f"mysql+pymysql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
-    )
-else:
-    # Local development → SQLite
-    app.config['SQLALCHEMY_DATABASE_URI'] = (
-        "sqlite:///" + os.path.join(BASE_DIR, "local.db")
-    )
-
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# =========================
-# UPLOAD CONFIG
-# =========================
-UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+# Uploads
+UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 db = SQLAlchemy(app)
 
-# =========================
+# -------------------------------------------------
 # MODELS
-# =========================
+# -------------------------------------------------
 class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    company = db.Column(db.String(100))
-    email = db.Column(db.String(100), nullable=False)
+    name = db.Column(db.String(100))
+    email = db.Column(db.String(100))
     phone = db.Column(db.String(20))
     service = db.Column(db.String(100))
     message = db.Column(db.Text)
@@ -261,32 +240,24 @@ class Contact(db.Model):
 
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    fullname = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
-    dob = db.Column(db.String(50))
-    address = db.Column(db.Text)
-    gender = db.Column(db.String(50))
+    fullname = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    phone = db.Column(db.String(20))
     position = db.Column(db.String(100))
-    location = db.Column(db.String(100))
-    qualification = db.Column(db.String(100))
-    passout = db.Column(db.String(50))
-    experience = db.Column(db.String(100))
-    resume_path = db.Column(db.String(200))
-    cover_letter = db.Column(db.Text)
+    resume = db.Column(db.String(200))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Admin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
+    username = db.Column(db.String(50), unique=True)
+    password = db.Column(db.String(200))
 
-# =========================
-# INIT DATABASE
-# =========================
+# -------------------------------------------------
+# INIT DB
+# -------------------------------------------------
 with app.app_context():
     db.create_all()
-    if Admin.query.count() == 0:
+    if not Admin.query.first():
         admin = Admin(
             username="admin",
             password=generate_password_hash("admin123")
@@ -294,68 +265,40 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
 
-# =========================
-# API ROUTES
-# =========================
-@app.route("/", methods=["GET"])
-def root():
-    return jsonify({"status": "Truevex backend running"}), 200
-
-@app.route("/api/contact", methods=["POST"])
-def submit_contact():
-    data = request.json
-
-    contact = Contact(
-        name=data.get("name"),
-        company=data.get("company"),
-        email=data.get("email"),
-        phone=data.get("phone"),
-        service=data.get("service"),
-        message=data.get("message")
-    )
-    db.session.add(contact)
-    db.session.commit()
-
-    return jsonify({"message": "Message sent successfully"}), 200
-
-@app.route("/api/apply", methods=["POST"])
-def submit_apply():
-    data = request.form
-    resume = request.files.get("resume")
-
-    resume_filename = None
-    if resume and resume.filename:
-        filename = secure_filename(resume.filename)
-        resume_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-        resume.save(os.path.join(app.config['UPLOAD_FOLDER'], resume_filename))
-
-    application = Application(
-        fullname=data.get("fullname"),
-        email=data.get("email"),
-        phone=data.get("phone"),
-        dob=data.get("dob"),
-        address=data.get("address"),
-        gender=data.get("gender"),
-        position=data.get("position"),
-        location=data.get("location"),
-        qualification=data.get("qualification"),
-        passout=data.get("passout"),
-        experience=data.get("experience"),
-        cover_letter=data.get("cover_letter"),
-        resume_path=resume_filename
-    )
-
-    db.session.add(application)
-    db.session.commit()
-
-    return jsonify({"message": "Application submitted successfully"}), 200
-
+# -------------------------------------------------
+# ROUTES
+# -------------------------------------------------
 @app.route("/health")
 def health():
-    return jsonify({"status": "ok"}), 200
+    return {"status": "ok"}
 
-# =========================
-# RUN LOCAL
-# =========================
+@app.route("/api/contact", methods=["POST"])
+def contact():
+    data = request.json
+    c = Contact(**data)
+    db.session.add(c)
+    db.session.commit()
+    return {"message": "Contact saved"}
+
+@app.route("/api/apply", methods=["POST"])
+def apply():
+    file = request.files.get("resume")
+    filename = None
+    if file:
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+
+    a = Application(
+        fullname=request.form.get("fullname"),
+        email=request.form.get("email"),
+        phone=request.form.get("phone"),
+        position=request.form.get("position"),
+        resume=filename
+    )
+    db.session.add(a)
+    db.session.commit()
+    return {"message": "Application submitted"}
+
+# -------------------------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
