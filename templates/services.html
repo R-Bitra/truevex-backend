@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truevex technologies</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/101 (1) copy ico file.ico') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/services.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="header-logo">
+            <a href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='images/101-crop.png') }}" alt="TRUE VAX Logo">
+            </a>
+        </div>
+
+        <nav class="header-nav">
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('services') }}">Services</a>
+            <a href="{{ url_for('aboutus') }}">About Us</a>
+            <!-- <a href="#">Careers</a> -->
+            <a href="{{ url_for('contact') }}">Contact</a>
+        </nav>
+
+        <div class="header-actions">
+            <a href="{{ url_for('login') }}">
+                <button class="btn-login">Login</button>
+            </a>
+            <button class="btn-primary">Get Started</button>
+        </div>
+
+    </header>
+
+    <div class="container">
+        <section class="hero">
+            <div class="hero-text">
+                <h1>Empowering Your Vision Through Cutting-Edge Technology Services</h1>
+                <p>From innovative software development to strategic IT consulting, we provide comprehensive technology
+                    solutions tailored to drive your business forward. Partner with us to transform challenges into
+                    opportunities.</p>
+                <button class="btn-expert">Talk to an Expert</button>
+            </div>
+            <div class="image-placeholder"><img src="{{ url_for('static', filename='images/service-p1-group.png') }}"
+                    alt="Hero Image"></div>
+        </section>
+    </div>
+
+    <div class="tabs-section">
+        <a href="#software-development" class="tab-btn active">Software Development</a>
+        <a href="#software-testing" class="tab-btn">Software Testing</a>
+        <a href="#devops" class="tab-btn">DevOps</a>
+        <a href="#it-staffing" class="tab-btn">IT Staffing</a>
+        <!-- <a href="#strategic-consultancy" class="tab-btn">Strategic Consultancy</a>
+        <a href="#digital-transformation" class="tab-btn">Digital Transformation</a> -->
+    </div>
+
+    <div class="container">
+        <section id="software-development" class="service-block">
+            <div class="service-info">
+                <h2>Software Development</h2>
+                <p class="main-desc">Building robust, scalable, and secure software solutions tailored to your unique
+                    business requirements. Our expertise spans across various domains and technologies, ensuring your
+                    vision becomes a reality.</p>
+                <div class="card-grid">
+                    <div class="card"><span class="card-label">Web Applications</span>
+                        <p>Crafting dynamic and responsive web platforms for optimal user experience and powerful
+                            backend functionality.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Mobile Apps</span>
+                        <p>Developing intuitive and high-performance native or cross-platform mobile applications for
+                            iOS and Android.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Cloud-native</span>
+                        <p>Designing and implementing scalable applications that leverage the full power of cloud
+                            ecosystems like AWS, Azure, and GCP.</p>
+                    </div>
+                    <div class="card"><span class="card-label">API Development</span>
+                        <p>Creating secure and efficient APIs for seamless integration between systems and third-party
+                            services.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Frontend Development</span>
+                        <p>Focusing on the user interface and experience with modern frameworks, ensuring visually
+                            appealing and highly interactive designs.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Backend Development</span>
+                        <p>Building the server-side logic, databases, and infrastructure that power your applications
+                            with reliability and performance.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Custom Software</span>
+                        <p>Developing bespoke software tailored exactly to your unique operational workflows and
+                            business challenges.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Microservices</span>
+                        <p>Architecting applications as a collection of loosely coupled services, enhancing agility,
+                            scalability, and resilience.</p>
+                    </div>
+                </div>
+                <!-- <button class="btn-expert">Learn More About Development</button> -->
+            </div>
+            <div class="service-side-img"><img src="{{ url_for('static', filename='images/service-p2-sw.png') }}"
+                    alt="Software Development"></div>
+        </section>
+
+        <section id="software-testing" class="service-block reverse">
+            <div class="service-info">
+                <h2>Software Testing</h2>
+                <p class="main-desc">Ensuring the quality, reliability, and security of your software through rigorous
+                    testing methodologies and advanced tools. We guarantee a flawless user experience and robust system
+                    performance.</p>
+                <div class="card-grid">
+                    <div class="card"><span class="card-label">Functional Testing</span>
+                        <p>Verifying that each function of the software operates according to design specifications.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Automation Testing</span>
+                        <p>Utilizing automated scripts and tools to execute repetitive test cases quickly and
+                            efficiently.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Performance Testing</span>
+                        <p>Assessing software responsiveness, stability, scalability, and resource usage under various
+                            workloads.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Load Testing</span>
+                        <p>Evaluating system behavior under anticipated peak load conditions to identify bottlenecks.
+                        </p>
+                    </div>
+                    <div class="card"><span class="card-label">Stress Testing</span>
+                        <p>Pushing system resources to their limits to determine robustness and error handling under
+                            extreme conditions.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Security Testing</span>
+                        <p>Identifying vulnerabilities and weaknesses in the software to protect against potential
+                            threats and data breaches.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Usability Testing</span>
+                        <p>Evaluating the user-friendliness and intuitiveness of the software from an end-user
+                            perspective.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Compatibility Testing</span>
+                        <p>Ensuring the software functions correctly across different operating systems, browsers, and
+                            devices.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Regression Testing</span>
+                        <p>Confirming that recent code changes have not adversely affected existing functionalities.</p>
+                    </div>
+                </div>
+                <!-- <button class="btn-expert">Explore Testing Solutions</button> -->
+            </div>
+            <div class="service-side-img"><img
+                    src="{{ url_for('static', filename='images/service-p3-sw-testing.png') }}" alt="Software Testing">
+            </div>
+        </section>
+
+        <section id="devops" class="service-block">
+            <div class="service-info">
+                <h2>DevOps</h2>
+                <p class="main-desc">Streamlining your software development lifecycle with best practices in DevOps. We
+                    bridge the gap between development and operations for faster releases, improved collaboration, and
+                    increased efficiency.</p>
+                <div class="card-grid">
+                    <div class="card"><span class="card-label">CI/CD Pipelines</span>
+                        <p>Implementing continuous integration and continuous delivery pipelines for automated builds,
+                            tests, and deployments.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Infrastructure as Code</span>
+                        <p>Managing and provisioning infrastructure through code, enabling consistency, repeatability,
+                            and version control.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Monitoring & Observability</span>
+                        <p>Setting up comprehensive monitoring solutions to gain insights into application performance
+                            and system health.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Containerization & Orchestration</span>
+                        <p>Leveraging Docker and Kubernetes for efficient application packaging, deployment, and
+                            management.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Release Management</span>
+                        <p>Establishing structured processes for planning, executing, and controlling software releases.
+                        </p>
+                    </div>
+                    <div class="card"><span class="card-label">Cloud Migration</span>
+                        <p>Facilitating seamless migration of applications and data to cloud environments, optimizing
+                            for cost and performance.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Platform Engineering</span>
+                        <p>Designing and building internal developer platforms to enhance developer experience and
+                            productivity.</p>
+                    </div>
+                </div>
+                <!-- <button class="btn-expert">Optimize with DevOps</button> -->
+            </div>
+            <div class="service-side-img"> <img src="{{ url_for('static', filename='images/service-p4-devops.png') }}"
+                    alt="DevOps"></div>
+        </section>
+
+        <section id="it-staffing" class="service-block reverse">
+            <div class="service-info">
+                <h2>IT Staffing</h2>
+                <p class="main-desc">Access top-tier IT talent exactly when you need it. Our staffing solutions help you
+                    build dynamic and skilled teams to accelerate your projects and meet your strategic goals.</p>
+                <div class="card-grid">
+                    <div class="card"><span class="card-label">Contract Staffing</span>
+                        <p>Providing skilled IT professionals for short-term projects or to augment your existing teams.
+                        </p>
+                    </div>
+                    <div class="card"><span class="card-label">Dedicated Teams</span>
+                        <p>Assembling and managing full-fledged dedicated teams to work exclusively on your projects.
+                        </p>
+                    </div>
+                    <div class="card"><span class="card-label">Contract-to-Hire</span>
+                        <p>Offering flexible options to convert contract professionals into permanent employees after a
+                            trial period.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Permanent Placement</span>
+                        <p>Recruiting and placing highly qualified IT candidates for long-term roles within your
+                            organization.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Skill Assessment</span>
+                        <p>Utilizing rigorous assessment tools to verify the technical competencies and soft skills of
+                            candidates.</p>
+                    </div>
+                    <div class="card"><span class="card-label">Onboarding Support</span>
+                        <p>Providing comprehensive support to ensure a smooth integration of new hires into your team
+                            and projects.</p>
+                    </div>
+                </div>
+                <!-- <button class="btn-expert">Find Your IT Talent</button> -->
+            </div>
+            <div class="service-side-img"><img src="{{ url_for('static', filename='images/service-p5-staffing.png') }}"
+                    alt="IT Staffing"></div>
+        </section>
+
+        <div class="cta-container" id="cta-section">
+
+            <div class="cta-blue">
+
+                <h2>Ready to Innovate with Us?</h2>
+                <p>Connect with our experts today to discuss your project needs and discover how our technology
+                    solutions can propel your business forward.</p>
+                <button class="btn-white">Talk to an Expert</button>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <div class="footer-brand">
+                        <a href="{{ url_for('index') }}" class="footer-logo">
+                            <img src="{{ url_for('static', filename='images/101-crop.png') }}" alt="TRUE VAX">
+                        </a>
+                        <span class="footer-text">
+                            Innovating solutions for a connected world.
+                        </span>
+                    </div>
+                </div>
+
+
+                <div class="footer-col">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#software-development">Software Development</a></li>
+                        <li><a href="#software-testing">Software Testing</a></li>
+                        <li><a href="#devops">DevOps</a></li>
+                        <li><a href="#it-staffing">IT Staffing</a></li>
+                        <!-- <li><a href="#strategic-consultancy">Strategic Consultancy</a></li>
+                        <li><a href="#digital-transformation">Digital Transformation</a></li> -->
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('services') }}">Services</a></li>
+                        <li><a href="{{ url_for('aboutus') }}">About Us</a></li>
+                        <!-- <li><a href="#">Careers</a></li> -->
+                        <li><a href="{{ url_for('contact') }}">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li>Privacy Policy</li>
+                        <li>Terms of Service</li>
+                    </ul>
+                </div>
+            </div>
+            <div
+                style="text-align: center; color: #9CA3AF; font-size: 14px; border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 20px;">
+                © 2026 Truevex Technologies. All rights reserved.
+            </div>
+        </footer>
+    </div>
+    <script>
+        const tabs = document.querySelector('.tabs-section');
+        const tabLinks = document.querySelectorAll('.tab-btn');
+        const sections = document.querySelectorAll('.service-block');
+        const ctaSection = document.querySelector('#cta-section');
+
+        const HEADER_OFFSET = 160; // header + tabs height
+
+        window.addEventListener('scroll', () => {
+
+            /* --------- TAB HIDE / SHOW --------- */
+            if (ctaSection) {
+                const ctaTop = ctaSection.getBoundingClientRect().top;
+
+                if (ctaTop <= HEADER_OFFSET) {
+                    tabs.style.display = 'none';
+                } else {
+                    tabs.style.display = 'flex';
+                }
+            }
+
+            /* --------- ACTIVE TAB LOGIC --------- */
+            let currentSectionId = '';
+
+            sections.forEach(section => {
+                const sectionTop =
+                    section.getBoundingClientRect().top +
+                    window.pageYOffset -
+                    HEADER_OFFSET;
+
+                const sectionHeight = section.offsetHeight;
+
+                if (
+                    window.pageYOffset >= sectionTop &&
+                    window.pageYOffset < sectionTop + sectionHeight
+                ) {
+                    currentSectionId = section.id;
+                }
+            });
+
+            tabLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentSectionId}`) {
+                    link.classList.add('active');
+                }
+            });
+
+        });
+    </script>
+
+</body>
+
+</html>

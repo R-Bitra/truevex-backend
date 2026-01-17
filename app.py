@@ -198,20 +198,17 @@
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
-import os
-from flask import Flask, jsonify, request
+from flask import Flask, render_template, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import os
 
-# -----------------------------------
-# App setup
-# -----------------------------------
 app = Flask(__name__)
 CORS(app)
 
-# -----------------------------------
-# Database config (Render PostgreSQL)
-# -----------------------------------
+# ======================
+# DATABASE CONFIG
+# ======================
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
@@ -219,96 +216,65 @@ if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret")
 
 db = SQLAlchemy(app)
 
-with app.app_context():
-    db.create_all()
-
-# -----------------------------------
-# Models
-# -----------------------------------
+# ======================
+# MODELS
+# ======================
 class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    email = db.Column(db.String(120))
+    email = db.Column(db.String(100))
     message = db.Column(db.Text)
 
-# -----------------------------------
-# Routes
-# -----------------------------------
+# ======================
+# ROUTES (PAGES)
+# ======================
 @app.route("/")
 def home():
-    return jsonify({"message": "Truevex backend running"})
+    return render_template("index.html")
+
+@app.route("/contact", methods=["GET"])
+def contact_page():
+    return render_template("contact.html")
+
+@app.route("/career")
+def career():
+    return render_template("career.html")
+
+@app.route("/apply")
+def apply():
+    return render_template("apply.html")
+
+# ======================
+# API ROUTES
+# ======================
+@app.route("/api/contact", methods=["POST"])
+def submit_contact():
+    data = request.get_json()
+
+    contact = Contact(
+        name=data.get("name"),
+        email=data.get("email"),
+        message=data.get("message")
+    )
+    db.session.add(contact)
+    db.session.commit()
+
+    return jsonify({"status": "saved"})
 
 @app.route("/health")
 def health():
     return jsonify({"status": "ok"})
 
-@app.route("/contact", methods=["POST"])
-def contact():
-    data = request.json
-
-    new_contact = Contact(
-        name=data.get("name"),
-        email=data.get("email"),
-        message=data.get("message"),
-    )
-
-    db.session.add(new_contact)
-    db.session.commit()
-
-    return jsonify({"success": True})
-
-# -----------------------------------
-# Init DB (SAFE for Render)
-# -----------------------------------
-with app.app_context():
-    db.create_all()
-
-# -----------------------------------
-# Run
-# -----------------------------------
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
-
 @app.route("/db-check")
 def db_check():
-    try:
-        # simple query to test DB connection
-        db.session.execute(db.text("SELECT 1"))
-        return {"db": "connected"}, 200
-    except Exception as e:
-        return {"db": "error", "details": str(e)}, 500
-@app.route("/contact", methods=["POST"])
-def contact():
-    try:
-        data = request.get_json()
+    db.session.execute(db.text("SELECT 1"))
+    return jsonify({"db": "connected"})
 
-        name = data.get("name")
-        email = data.get("email")
-        message = data.get("message")
-
-        if not name or not email or not message:
-            return jsonify({"error": "All fields are required"}), 400
-
-        # simple DB insert (raw SQL – safe & simple)
-        db.session.execute(
-            text("""
-                INSERT INTO contact (name, email, message)
-                VALUES (:name, :email, :message)
-            """),
-            {
-                "name": name,
-                "email": email,
-                "message": message
-            }
-        )
-        db.session.commit()
-
-        return jsonify({"status": "success", "message": "Form submitted"}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+# ======================
+# RUN
+# ======================
+if __name__ == "__main__":
+    app.run(debug=True)
