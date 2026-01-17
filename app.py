@@ -198,200 +198,79 @@
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
-from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
-from datetime import datetime
 import os
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
+from flask_cors import CORS
 
-# -------------------------------
-# App Configuration
-# -------------------------------
-app = Flask(__name__, static_folder='.', template_folder='.', static_url_path='')
-app.secret_key = os.getenv("SECRET_KEY", "truevex_fallback_secret")
+app = Flask(__name__)
+CORS(app)
 
-basedir = os.path.abspath(os.path.dirname(__file__))
+# =========================
+# DATABASE CONFIG
+# =========================
 
-# -------------------------------
-# DATABASE (Render PostgreSQL)
-# -------------------------------
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
-    raise RuntimeError("DATABASE_URL is not set")
+    raise RuntimeError("DATABASE_URL not set")
 
-# Render fix
+# Fix for postgres:// vs postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
-# -------------------------------
-# Uploads
-# -------------------------------
-UPLOAD_FOLDER = os.path.join(basedir, "uploads")
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "dev-secret")
 
 db = SQLAlchemy(app)
 
-# -------------------------------
-# MODELS
-# -------------------------------
-class Contact(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    company = db.Column(db.String(100))
-    email = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20))
-    service = db.Column(db.String(100))
-    message = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Application(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    fullname = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    phone = db.Column(db.String(20), nullable=False)
-    dob = db.Column(db.String(50))
-    address = db.Column(db.Text)
-    gender = db.Column(db.String(50))
-    position = db.Column(db.String(100))
-    location = db.Column(db.String(100))
-    qualification = db.Column(db.String(100))
-    passout = db.Column(db.String(50))
-    experience = db.Column(db.String(100))
-    resume_path = db.Column(db.String(200))
-    cover_letter = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Admin(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(200), nullable=False)
-
-# -------------------------------
-# INITIALIZE DB
-# -------------------------------
-with app.app_context():
-    db.create_all()
-    if Admin.query.count() == 0:
-        admin = Admin(
-            username="admin",
-            password=generate_password_hash("admin123")
-        )
-        db.session.add(admin)
-        db.session.commit()
-
-# -------------------------------
-# ROUTES
-# -------------------------------
-@app.route("/")
-def index():
-    return render_template("index.html")
-
-@app.route("/<page>")
-def serve_page(page):
-    if ".." in page or "/" in page or "\\" in page:
-        return redirect(url_for("index"))
-    if page.endswith(".html") and os.path.exists(os.path.join(basedir, page)):
-        return render_template(page)
-    return redirect(url_for("index"))
-
+# =========================
+# HEALTH CHECK
+# =========================
 @app.route("/health")
 def health():
-    return {"status": "ok"}
+    return jsonify({"status": "ok"})
 
-# -------------------------------
-# CONTACT FORM
-# -------------------------------
-@app.route("/submit_contact", methods=["POST"])
-def submit_contact():
-    contact = Contact(
-        name=request.form.get("name"),
-        company=request.form.get("company"),
-        email=request.form.get("email"),
-        phone=request.form.get("phone"),
-        service=request.form.get("service"),
-        message=request.form.get("message")
-    )
-    db.session.add(contact)
+# =========================
+# CREATE TABLE (RUN ONCE)
+# =========================
+@app.route("/init-db")
+def init_db():
+    db.session.execute(text("""
+        CREATE TABLE IF NOT EXISTS leads (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(100),
+            email VARCHAR(100)
+        )
+    """))
     db.session.commit()
-    return "<script>alert('Message sent successfully!');window.location='/contact.html';</script>"
+    return jsonify({"message": "Database initialized"})
 
-# -------------------------------
-# JOB APPLICATION
-# -------------------------------
-@app.route("/submit_apply", methods=["POST"])
-def submit_apply():
-    resume = request.files.get("resume")
-    resume_filename = None
+# =========================
+# SAVE FORM DATA
+# =========================
+@app.route("/api/submit", methods=["POST"])
+def submit_form():
+    data = request.get_json()
 
-    if resume and resume.filename:
-        filename = secure_filename(resume.filename)
-        resume_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
-        resume.save(os.path.join(app.config["UPLOAD_FOLDER"], resume_filename))
+    name = data.get("name")
+    email = data.get("email")
 
-    app_data = Application(
-        fullname=request.form.get("fullname"),
-        email=request.form.get("email"),
-        phone=request.form.get("phone"),
-        dob=request.form.get("dob"),
-        address=request.form.get("address"),
-        gender=request.form.get("gender"),
-        position=request.form.get("position"),
-        location=request.form.get("location"),
-        qualification=request.form.get("qualification"),
-        passout=request.form.get("passout"),
-        experience=request.form.get("experience"),
-        cover_letter=request.form.get("cover_letter"),
-        resume_path=resume_filename
+    if not name or not email:
+        return jsonify({"error": "Name and email required"}), 400
+
+    db.session.execute(
+        text("INSERT INTO leads (name, email) VALUES (:name, :email)"),
+        {"name": name, "email": email}
     )
-
-    db.session.add(app_data)
     db.session.commit()
-    return "<script>alert('Application submitted!');window.location='/apply.html';</script>"
 
-# -------------------------------
-# ADMIN
-# -------------------------------
-@app.route("/admin-login", methods=["GET", "POST"])
-def admin_login():
-    if request.method == "POST":
-        admin = Admin.query.filter_by(username=request.form["username"]).first()
-        if admin and check_password_hash(admin.password, request.form["password"]):
-            session["admin_id"] = admin.id
-            return redirect(url_for("admin_dashboard"))
-        flash("Invalid credentials")
-    return render_template("login.html")
+    return jsonify({"message": "Data saved successfully"})
 
-@app.route("/admin-dashboard")
-def admin_dashboard():
-    if "admin_id" not in session:
-        return redirect(url_for("admin_login"))
-    return render_template(
-        "admin_dashboard.html",
-        contacts=Contact.query.all(),
-        applications=Application.query.all()
-    )
-
-@app.route("/logout")
-def logout():
-    session.clear()
-    return redirect(url_for("admin_login"))
-
-@app.route("/view-resume/<filename>")
-def view_resume(filename):
-    if "admin_id" not in session:
-        return "Access Denied"
-    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
-
-# -------------------------------
-# RUN
-# -------------------------------
+# =========================
+# START APP
+# =========================
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
