@@ -203,12 +203,15 @@ from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
+# -----------------------------------
+# App setup
+# -----------------------------------
 app = Flask(__name__)
 CORS(app)
 
-# -------------------------
-# DATABASE CONFIG
-# -------------------------
+# -----------------------------------
+# Database config (Render PostgreSQL)
+# -----------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
 if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
@@ -220,24 +223,21 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret")
 
 db = SQLAlchemy(app)
 
-# -------------------------
-# MODELS
-# -------------------------
+# -----------------------------------
+# Models
+# -----------------------------------
 class Contact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
-    email = db.Column(db.String(100))
+    email = db.Column(db.String(120))
     message = db.Column(db.Text)
 
-# -------------------------
-# ROUTES
-# -------------------------
+# -----------------------------------
+# Routes
+# -----------------------------------
 @app.route("/")
 def home():
-    return jsonify({
-        "message": "Truevex backend is running",
-        "status": "ok"
-    })
+    return jsonify({"message": "Truevex backend running"})
 
 @app.route("/health")
 def health():
@@ -250,19 +250,23 @@ def contact():
     new_contact = Contact(
         name=data.get("name"),
         email=data.get("email"),
-        message=data.get("message")
+        message=data.get("message"),
     )
 
     db.session.add(new_contact)
     db.session.commit()
 
-    return jsonify({"message": "Data saved successfully"}), 201
+    return jsonify({"success": True})
 
-# -------------------------
-# STARTUP
-# -------------------------
+# -----------------------------------
+# Init DB (SAFE for Render)
+# -----------------------------------
 with app.app_context():
     db.create_all()
 
+# -----------------------------------
+# Run
+# -----------------------------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000)
+
