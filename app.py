@@ -281,3 +281,34 @@ def db_check():
         return {"db": "connected"}, 200
     except Exception as e:
         return {"db": "error", "details": str(e)}, 500
+@app.route("/contact", methods=["POST"])
+def contact():
+    try:
+        data = request.get_json()
+
+        name = data.get("name")
+        email = data.get("email")
+        message = data.get("message")
+
+        if not name or not email or not message:
+            return jsonify({"error": "All fields are required"}), 400
+
+        # simple DB insert (raw SQL – safe & simple)
+        db.session.execute(
+            text("""
+                INSERT INTO contact (name, email, message)
+                VALUES (:name, :email, :message)
+            """),
+            {
+                "name": name,
+                "email": email,
+                "message": message
+            }
+        )
+        db.session.commit()
+
+        return jsonify({"status": "success", "message": "Form submitted"}), 201
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
